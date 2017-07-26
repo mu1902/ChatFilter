@@ -8,13 +8,13 @@ var opt = {
     fun: 'new',
     lang: 'zh_CN',
     _: new Date().getTime()
-}
+};
 
-var getUUID = async function () {
-    await new Promise(function (resolve,reject) {
+var getUUID = function () {
+    return new Promise(function (resolve, reject) {
         request.post({ url: "https://login.weixin.qq.com/jslogin", formData: opt }, function (err, httpResponse, body) {
             if (!err) {
-                data = qs.parse(body, '; ', ' = ')
+                var data = qs.parse(body, '; ', ' = ')
                 if (data['window.QRLogin.code'] == '200') {
                     resolve(data['window.QRLogin.uuid'].slice(1, -2));
                 }
@@ -23,8 +23,27 @@ var getUUID = async function () {
                 console.log(err);
             }
         });
-    }
+    });
 };
 
-uuid = getUUID();
-console.log(uuid);
+var getQRCode = function () {
+    return new Promise(function (resolve, reject) {
+        request.post({ url: "https://login.weixin.qq.com/l/" + uuid }, function (err, httpResponse, body) {
+            if (!err) {
+                console.log(body);
+            }
+            else {
+                console.log(err);
+            }
+        });
+    });
+};
+
+async function init() {
+    uuid = await getUUID();
+    console.log(uuid);
+    qr = await getQRCode();
+    console.log(qr);
+};
+
+init();
