@@ -26,7 +26,8 @@ var getUUID = function () {
 
 var checkLogin = function (id) {
     var opt = {
-        tip: 1,
+        loginicon: true,
+        tip: 0,
         uuid: id,
         _: +new Date
     };
@@ -57,6 +58,7 @@ async function init() {
         var loginState = await checkLogin(uuid);
         if (loginState["window.code"] == '200') {
             console.log("确认登录");
+            console.log(loginState["\nwindow.redirect_uri"]);
             break;
         }
         if (loginState["window.code"] == '201') {
