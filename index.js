@@ -1,16 +1,14 @@
 var request = require('request');
 var qs = require('querystring');
-
-var uuid = '';
-
-var opt = {
-    appid: 'wx782c26e4c19acffb',
-    fun: 'new',
-    lang: 'zh_CN',
-    _: new Date().getTime()
-};
+var qr = require('qrcode-terminal');
 
 var getUUID = function () {
+    var opt = {
+        appid: 'wx782c26e4c19acffb',
+        fun: 'new',
+        lang: 'zh_CN',
+        _: +new Date
+    };
     return new Promise(function (resolve, reject) {
         request.post({ url: "https://login.weixin.qq.com/jslogin", formData: opt }, function (err, httpResponse, body) {
             if (!err) {
@@ -26,24 +24,51 @@ var getUUID = function () {
     });
 };
 
-var getQRCode = function () {
+var checkLogin = function (id) {
+    var opt = {
+        tip: 1,
+        uuid: id,
+        _: +new Date
+    };
     return new Promise(function (resolve, reject) {
-        request.post({ url: "https://login.weixin.qq.com/l/" + uuid }, function (err, httpResponse, body) {
+        request.get({ url: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login", qs: opt }, function (err, httpResponse, body) {
             if (!err) {
-                console.log(body);
+                var data = qs.parse(body, ';', '=')
+                resolve(data);
             }
             else {
                 console.log(err);
+                resolve(null)
             }
         });
     });
 };
 
 async function init() {
-    uuid = await getUUID();
-    console.log(uuid);
-    qr = await getQRCode();
-    console.log(qr);
+    var uuid = await getUUID();
+    if (uuid == null) {
+        console.log("获取UUID失败");
+    } else {
+        console.log(uuid);
+        console.log("扫码登录");
+    }
+    qr.generate("https://login.weixin.qq.com/l/" + uuid);
+    while (true) {
+        var loginState = await checkLogin(uuid);
+        if (loginState["window.code"] == '200') {
+            console.log("确认登录");
+            break;
+        }
+        if (loginState["window.code"] == '201') {
+            console.log("扫描成功");
+            continue;
+        }
+        if (loginState["window.code"] == '408') {
+            console.log("登录超时");
+            init();
+            return;
+        }
+    }
 };
 
 init();
