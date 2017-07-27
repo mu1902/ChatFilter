@@ -1,11 +1,11 @@
 var request = require('request');
 var qs = require('querystring');
 var qr = require('qrcode-terminal');
-var $ = require('jquery')(require("jsdom").jsdom().createWindow());
+var cheerio = require('cheerio');
 
-var request_promise = function (url, method, formData, qs) {
+var request_promise = function (url, method, formData, qs, headers) {
     return new Promise(function (resolve, reject) {
-        request({ url: url, method: method, formData: formData, qs: qs }, function (err, httpResponse, body) {
+        request({ url: url, method: method, formData: formData, qs: qs, headers: headers }, function (err, httpResponse, body) {
             if (!err) {
                 resolve(body);
             } else {
@@ -61,12 +61,14 @@ var getTicket = async function (url) {
     }
 }
 
+var skey, sid, uin, pass_ticket;
+
 var init = async function () {
     var uuid = await getUUID();
     //console.log(uuid);
     if (uuid == null) {
         console.log("获取UUID失败");
-        return;
+        return false;
     } else {
         console.log("扫码登录");
     }
@@ -85,12 +87,67 @@ var init = async function () {
         if (loginState["window.code"] == '408') {
             console.log("登录超时");
             init();
-            return;
+            return false;
         }
     }
     var ticket = await getTicket(redirect_uri);
-    var $ticket = $(ticket);
-    console.log($ticket.find('skey').text());
+    var $ticket = cheerio.load(ticket);
+    skey = $ticket('skey').text();
+    pass_ticket = $ticket('pass_ticket').text();
+    sid = $ticket('wxsid').text();
+    uin = $ticket('wxuin').text();
+    return true;
 };
 
-init();
+var wxinit = async function () {
+    if (await init()) {
+        var para = {
+            BaseRequest: {
+                Uin: uin,
+                Sid: sid,
+                Skey: skey,
+                DeviceID: 'e' + Math.random().toFixed(15).toString().substring(2, 17)
+            }
+        };
+        var opt = {
+            r: ~new Date,
+            lang: 'zh_CN',
+            pass_ticket: pass_ticket
+        };
+        var headers = [
+            {
+                name: 'Content-Type',
+                value: 'application/json; charset=UTF-8'
+            }
+        ];
+
+        var res = await request_promise("https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit", "POST", para, opt, headers);
+        console.log(res);
+    }
+};
+
+// wxinit();
+var BaseRequest = {
+    Uin: uin,
+    Sid: sid,
+    Skey: skey,
+    DeviceID: 'e' + Math.random().toFixed(15).toString().substring(2, 17)
+};
+var opt = {
+    r: ~new Date,
+    lang: 'zh_CN',
+    pass_ticket: pass_ticket
+};
+var headers = [
+    {
+        name: 'Content-Type',
+        value: 'application/json; charset=UTF-8'
+    }
+];
+request({ url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit", method: "POST", qs: opt, headers: headers, body: JSON.stringify(BaseRequest) }, function (err, httpResponse, body) {
+    if (!err) {
+        console.log(body);
+    } else {
+        console.log(null);
+    }
+});
