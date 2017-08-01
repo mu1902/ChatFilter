@@ -1,11 +1,23 @@
-var request = require('request');
-var qs = require('querystring');
-var qr = require('qrcode-terminal');
-var cheerio = require('cheerio');
+const request = require('request');
+const qs = require('querystring');
+const url = require('url');
+const qr = require('qrcode-terminal');
+const cheerio = require('cheerio');
 
-var request_promise = function (url, method, formData, qs, headers) {
+const request_promise = function (option) {
+    option["headers"] = [{
+        name: 'Referer',
+        value: 'https://wx2.qq.com/'
+    }, {
+        name: 'User-Agent',
+        value: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36'
+    }, {
+        name: 'Accept',
+        value: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+    }];
+    option["jar"] = true;
     return new Promise(function (resolve, reject) {
-        request({ url: url, method: method, formData: formData, qs: qs, headers: headers }, function (err, httpResponse, body) {
+        request(option, function (err, httpResponse, body) {
             if (!err) {
                 resolve(body);
             } else {
@@ -15,16 +27,21 @@ var request_promise = function (url, method, formData, qs, headers) {
     });
 }
 
-var getUUID = async function () {
-    var opt = {
+const getUUID = async function () {
+    const para = {
         appid: 'wx782c26e4c19acffb',
         fun: 'new',
         lang: 'zh_CN',
         _: +new Date
     };
-    var res = await request_promise("https://login.weixin.qq.com/jslogin", "POST", opt, {});
+    const request_option = {
+        url: "https://login.weixin.qq.com/jslogin",
+        method: "POST",
+        formData: para
+    };
+    const res = await request_promise(request_option);
     if (res) {
-        var data = qs.parse(res, '; ', ' = ')
+        const data = qs.parse(res, '; ', ' = ')
         if (data['window.QRLogin.code'] == '200') {
             return data['window.QRLogin.uuid'].slice(1, -2);
         }
@@ -34,17 +51,22 @@ var getUUID = async function () {
 
 };
 
-var checkLogin = async function (id) {
-    var opt = {
+const checkLogin = async function (id) {
+    const para = {
         loginicon: true,
         tip: 0,
         uuid: id,
         _: +new Date,
         r: ~new Date
     };
-    var res = await request_promise("https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login", "GET", {}, opt);
+    const request_option = {
+        url: "https://login.weixin.qq.com/cgi-bin/mmwebwx-bin/login",
+        method: "GET",
+        qs: para
+    };
+    const res = await request_promise(request_option);
     if (res) {
-        var data = qs.parse(res, ';', '=')
+        const data = qs.parse(res, ';', '=')
         return data;
     } else {
         return res;
@@ -52,8 +74,12 @@ var checkLogin = async function (id) {
 
 };
 
-var getTicket = async function (url) {
-    var res = await request_promise(url, "GET", {}, {});
+const getTicket = async function (url) {
+    const request_option = {
+        url: url,
+        method: "GET"
+    };
+    const res = await request_promise(request_option);
     if (res) {
         return res;
     } else {
@@ -61,10 +87,24 @@ var getTicket = async function (url) {
     }
 }
 
-var skey, sid, uin, pass_ticket;
+let baseRequest = {
+    Skey: '',
+    Sid: '',
+    Uin: '',
+    DeviceID: 'e' + Math.random().toFixed(15).toString().substring(2, 17)
+};
+let me, members, groups;
+let redirect_uri, pass_ticket, sync_key, sync_key_format;
+let checkSyncTimer;
+let HOST_LIST = ["webpush.weixin.qq.com",
+    "webpush.wx2.qq.com",
+    "webpush.wx8.qq.com",
+    "webpush.wx.qq.com",
+    "webpush.web2.wechat.com",
+    "webpush.web.wechat.com"];
 
-var init = async function () {
-    var uuid = await getUUID();
+const init = async function () {
+    const uuid = await getUUID();
     //console.log(uuid);
     if (uuid == null) {
         console.log("获取UUID失败");
@@ -74,10 +114,10 @@ var init = async function () {
     }
     qr.generate("https://login.weixin.qq.com/l/" + uuid);
     while (true) {
-        var loginState = await checkLogin(uuid);
+        const loginState = await checkLogin(uuid);
         if (loginState["window.code"] == '200') {
             console.log("确认登录");
-            var redirect_uri = loginState["\nwindow.redirect_uri"].slice(1, -1) + '&fun=new';
+            redirect_uri = loginState["\nwindow.redirect_uri"].slice(1, -1);
             break;
         }
         if (loginState["window.code"] == '201') {
@@ -90,64 +130,212 @@ var init = async function () {
             return false;
         }
     }
-    var ticket = await getTicket(redirect_uri);
-    var $ticket = cheerio.load(ticket);
-    skey = $ticket('skey').text();
+    const ticket = await getTicket(redirect_uri + '&fun=new');
+    const $ticket = cheerio.load(ticket);
     pass_ticket = $ticket('pass_ticket').text();
-    sid = $ticket('wxsid').text();
-    uin = $ticket('wxuin').text();
+    baseRequest.Skey = $ticket('skey').text();
+    baseRequest.Sid = $ticket('wxsid').text();
+    baseRequest.Uin = $ticket('wxuin').text();
+
     return true;
 };
 
-var wxinit = async function () {
+const wxinit = async function () {
     if (await init()) {
-        var para = {
-            BaseRequest: {
-                Uin: uin,
-                Sid: sid,
-                Skey: skey,
-                DeviceID: 'e' + Math.random().toFixed(15).toString().substring(2, 17)
-            }
-        };
-        var opt = {
+        console.log(baseRequest);
+        console.log("pass_ticket => " + pass_ticket);
+        console.log("redirect_uri => " + redirect_uri);
+        const para = {
             r: ~new Date,
             lang: 'zh_CN',
             pass_ticket: pass_ticket
         };
-        var headers = [
-            {
-                name: 'Content-Type',
-                value: 'application/json; charset=UTF-8'
-            }
-        ];
+        const request_option = {
+            url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit",
+            method: "POST",
+            qs: para,
+            body: JSON.stringify({ BaseRequest: baseRequest }),
 
-        var res = await request_promise("https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit", "POST", para, opt, headers);
+        };
+
+        const res = await request_promise(request_option);
+        me = JSON.parse(res).User;
+        sync_key = JSON.parse(res).SyncKey;
+        sync_key_format = JSON.parse(res).SyncKey.List.map((item) => item.Key + '_' + item.Val).join('|');
+        console.log("sync_key => " + sync_key_format);
+        return true;
+    } else {
+        return false;
+    }
+};
+
+
+const getContacts = async function () {
+    const para = {
+        pass_ticket: pass_ticket,
+        skey: baseRequest.Skey,
+        r: +new Date
+    };
+    const request_option = {
+        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin//webwxgetcontact",
+        method: "POST",
+        qs: para
+    };
+
+    const res = await request_promise(request_option);
+    const data = JSON.stringify(res);
+
+    members = [];
+    groups = [];
+    data.MemberList.forEach((member) => {
+        if (userName.includes('@@')) {
+            groups.push({ groupName: member.UserName, nickName: member.NickName });
+        } else {
+            members.push({ userName: member.UserName, nickName: member.NickName });
+        }
+    });
+}
+
+const getGroupMembers = async function () {
+    const para = {
+        type: "ex",
+        r: +new Date,
+        pass_ticket: pass_ticket
+    };
+    const body = {
+        BaseRequest: baseRequest,
+        Count: 0,
+        List: [];
+    };
+    const request_option = {
+        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact",
+        method: "POST",
+        qs: para,
+        body: JSON.stringify(body)
+    };
+
+    const res = await request_promise(request_option);
+
+}
+
+const notifyMobile = async function () {
+    const para = {
+        lang: 'zh_CN',
+        pass_ticket: pass_ticket,
+    };
+    const body = {
+        BaseRequest: baseRequest,
+        Code: 3,
+        FromUserName: me.UserName,
+        ToUserName: me.UserName,
+        ClientMsgId: +new Date
+    };
+    const request_option = {
+        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify",
+        method: "POST",
+        qs: para,
+        body: JSON.stringify(body)
+    };
+
+    const res = await request_promise(request_option);
+    console.log(res);
+}
+
+const lookupHost = async function () {
+    for (let h of HOST_LIST) {
+        const para = {
+            r: +new Date(),
+            skey: baseRequest.Skey,
+            sid: baseRequest.Sid,
+            uin: baseRequest.Uin,
+            deviceid: baseRequest.DeviceID,
+            synckey: sync_key_format,
+            _: +new Date()
+        };
+        const request_option = {
+            url: "https://" + h + "/cgi-bin/mmwebwx-bin/synccheck",
+            method: "GET",
+            qs: para
+        };
+
+        const res = await request_promise(request_option);
         console.log(res);
     }
+}
+
+const synccheck = async function () {
+    const para = {
+        r: +new Date(),
+        skey: baseRequest.Skey,
+        sid: baseRequest.Sid,
+        uin: baseRequest.Uin,
+        deviceid: baseRequest.DeviceID,
+        synckey: sync_key_format,
+        _: +new Date()
+    };
+    const host = url.parse(redirect_uri).host;
+    const request_option = {
+        url: "https://" + host + "/cgi-bin/mmwebwx-bin/synccheck",
+        method: "GET",
+        qs: para
+    };
+
+    const res = await request_promise(request_option);
+    const retcode = res.match(/retcode:"(\d+)"/)[1];
+    const selector = res.match(/selector:"(\d+)"/)[1];
+
+    clearTimeout(checkSyncTimer);
+
+    if (retcode != '0') {
+        await wxinit();
+        return false;
+    }
+
+    if (selector == '2') {
+        await run();
+    }
+
+    checkSyncTimer = setTimeout(() => {
+        synccheck();
+    }, 3e3);
 };
 
-// wxinit();
-var BaseRequest = {
-    Uin: uin,
-    Sid: sid,
-    Skey: skey,
-    DeviceID: 'e' + Math.random().toFixed(15).toString().substring(2, 17)
+const wxsync = async function () {
+    const para = {
+        sid: baseRequest.Sid,
+        skey: baseRequest.Skey,
+        pass_ticket: pass_ticket
+    };
+    const body = {
+        BaseRequest: baseRequest,
+        SyncKey: sync_key,
+        rr: ~new Date
+    };
+    const request_option = {
+        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxsync",
+        method: "POST",
+        qs: para,
+        body: JSON.stringify(body)
+    };
+
+    const res = await request_promise(request_option);
+    const message = JSON.parse(res).AddMsgList;
+    messageHandle(message);
 };
-var opt = {
-    r: ~new Date,
-    lang: 'zh_CN',
-    pass_ticket: pass_ticket
+
+const messageHandle = function (message) {
+    if (message.MsgType == 1) {
+        console.log(message.FromUserName);
+        console.log(message.Content);
+    }
+}
+
+const run = async function () {
+    if (await wxinit()) {
+        //await notifyMobile();
+        //await lookupHost();
+        await synccheck();
+    }
 };
-var headers = [
-    {
-        name: 'Content-Type',
-        value: 'application/json; charset=UTF-8'
-    }
-];
-request({ url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxinit", method: "POST", qs: opt, headers: headers, body: JSON.stringify(BaseRequest) }, function (err, httpResponse, body) {
-    if (!err) {
-        console.log(body);
-    } else {
-        console.log(null);
-    }
-});
+
+run();

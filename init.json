@@ -1,0 +1,168 @@
+{
+    "BaseResponse": {
+        "Ret": 0,
+        "ErrMsg": ""
+    },
+    "Count": 11,
+    "ContactList": [
+        {
+            "Uin": 0,
+            "UserName": "@4f1dd9ab3c1f2cde596cf2ec8fceea6b",
+            "NickName": "蒲公英",
+            "HeadImgUrl": "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=647061391&username=@4f1dd9ab3c1f2cde596cf2ec8fceea6b&skey=@crypt_62761d99_478cfd408db24621abb68d2fe583d3b1",
+            "ContactFlag": 3,
+            "MemberCount": 0,
+            "MemberList": [],
+            "RemarkName": "小心肝",
+            "HideInputBarFlag": 0,
+            "Sex": 2,
+            "Signature": "",
+            "VerifyFlag": 0,
+            "OwnerUin": 0,
+            "PYInitial": "PGY",
+            "PYQuanPin": "pugongying",
+            "RemarkPYInitial": "",
+            "RemarkPYQuanPin": "",
+            "StarFriend": 0,
+            "AppAccountFlag": 0,
+            "Statues": 0,
+            "AttrStatus": 98407,
+            "Province": "上海",
+            "City": "闸北",
+            "Alias": "",
+            "SnsFlag": 17,
+            "UniFriend": 0,
+            "DisplayName": "",
+            "ChatRoomId": 0,
+            "KeyWord": "qq1",
+            "EncryChatRoomId": "",
+            "IsOwner": 0
+        },
+        {
+            "Uin": 0,
+            "UserName": "@@23d87c09f77c5e62a95a37c998d31d4b794f4f6098bc40313e3cb6df08ae75e5",
+            "NickName": "富恩德交易",
+            "HeadImgUrl": "/cgi-bin/mmwebwx-bin/webwxgetheadimg?seq=663346482&username=@@23d87c09f77c5e62a95a37c998d31d4b794f4f6098bc40313e3cb6df08ae75e5&skey=@crypt_62761d99_478cfd408db24621abb68d2fe583d3b1",
+            "ContactFlag": 2,
+            "MemberCount": 10,
+            "MemberList": [
+                {
+                    "Uin": 0,
+                    "UserName": "@0399f6e225aa7d5f0ad1ae94053b580b",
+                    "NickName": "",
+                    "AttrStatus": 0,
+                    "PYInitial": "",
+                    "PYQuanPin": "",
+                    "RemarkPYInitial": "",
+                    "RemarkPYQuanPin": "",
+                    "MemberStatus": 0,
+                    "DisplayName": "",
+                    "KeyWord": "men"
+                },
+                {
+                    "Uin": 0,
+                    "UserName": "@7f8c4cb02c357e30a93ab284c5ecebc8",
+                    "NickName": "",
+                    "AttrStatus": 0,
+                    "PYInitial": "",
+                    "PYQuanPin": "",
+                    "RemarkPYInitial": "",
+                    "RemarkPYQuanPin": "",
+                    "MemberStatus": 0,
+                    "DisplayName": "",
+                    "KeyWord": "xia"
+                },
+            ],
+            "RemarkName": "",
+            "HideInputBarFlag": 0,
+            "Sex": 0,
+            "Signature": "",
+            "VerifyFlag": 0,
+            "OwnerUin": 0,
+            "PYInitial": "",
+            "PYQuanPin": "",
+            "RemarkPYInitial": "",
+            "RemarkPYQuanPin": "",
+            "StarFriend": 0,
+            "AppAccountFlag": 0,
+            "Statues": 1,
+            "AttrStatus": 0,
+            "Province": "",
+            "City": "",
+            "Alias": "",
+            "SnsFlag": 0,
+            "UniFriend": 0,
+            "DisplayName": "",
+            "ChatRoomId": 0,
+            "KeyWord": "",
+            "EncryChatRoomId": "",
+            "IsOwner": 0
+        },
+    ],
+    "SyncKey": {
+        "Count": 4,
+        "List": [
+            {
+                "Key": 1,
+                "Val": 663481751
+            },
+            {
+                "Key": 2,
+                "Val": 663483457
+            },
+            {
+                "Key": 3,
+                "Val": 663483435
+            },
+            {
+                "Key": 1000,
+                "Val": 1501148881
+            }
+        ]
+    },
+    "User": {
+        "Uin": 1618976881,
+        "UserName": "@8c9efc7976348243ea7d59800c03f5d7bc682cb991f9c05ee3d290cfa8e8f95b",
+        "NickName": "储昊",
+        "HeadImgUrl": "/cgi-bin/mmwebwx-bin/webwxgeticon?seq=585997462&username=@8c9efc7976348243ea7d59800c03f5d7bc682cb991f9c05ee3d290cfa8e8f95b&skey=@crypt_62761d99_478cfd408db24621abb68d2fe583d3b1",
+        "RemarkName": "",
+        "PYInitial": "",
+        "PYQuanPin": "",
+        "RemarkPYInitial": "",
+        "RemarkPYQuanPin": "",
+        "HideInputBarFlag": 0,
+        "StarFriend": 0,
+        "Sex": 1,
+        "Signature": "沉舟侧畔千帆过，病树前头万木春",
+        "AppAccountFlag": 0,
+        "VerifyFlag": 0,
+        "ContactFlag": 0,
+        "WebWxPluginSwitch": 0,
+        "HeadImgFlag": 1,
+        "SnsFlag": 17
+    },
+    "ChatSet": "filehelper,@4f1dd9ab3c1f2cde596cf2ec8fceea6b,@acb7a62c736099e86011621d35d22433,@@23d87c09f77c5e62a95a37c998d31d4b794f4f6098bc40313e3cb6df08ae75e5,@@c397646031b0bef11e52630c241c191ede0243b2f4d5eeab0020cb60add2a270,@75638dceb1de47bf36ac0b0a73cd5170,@51fe0c0d099132dd24cbcee3aa658e0c,@@2f975fbfea67579b887b7ae842ff3788f6e9946965d2adad367fb86f07d53d0a,weixin,@e9bdfce8de709d5ed4ca6edd4bd30e4f,@0b1925e4315728a8ad2004cfa7adb47b,@03e256778afdc57aa42441d8b63bddc5,fmessage,@@90db2c74fd6295c852877a10b27a6e8aba790ce5d288acec15ca25dfbc5961fc,@@658c2ec3d1112454efb7f5d1e211ba20ae30ed3e761b51832026685491e315ec,",
+    "SKey": "@crypt_62761d99_478cfd408db24621abb68d2fe583d3b1",
+    "ClientVersion": 637864509,
+    "SystemTime": 1501201557,
+    "GrayScale": 1,
+    "InviteStartCount": 40,
+    "MPSubscribeMsgCount": 4,
+    "MPSubscribeMsgList": [
+        {
+            "UserName": "@acb7a62c736099e86011621d35d22433",
+            "MPArticleCount": 1,
+            "MPArticleList": [
+                {
+                    "Title": "Python脚本分析CPU使用情况",
+                    "Digest": "在这篇文章中，我将讨论一个工具，用以分析Python中CPU使用情况。CPU分析是通过分析CPU执行代码的方式来测量代码的性能，以此找到代码中的不妥之处，然后处理它们。",
+                    "Cover": "http://mmbiz.qpic.cn/mmbiz_png/GJM4P9zwRq8ePsciacicISXhOyGmol187SJgkic4NTAYauyjRt3grotj7pbs4xPdvRBwaFvta5kBcVykEtgsBJPSw/640?wxtype=png&wxfrom=0",
+                    "Url": "http://mp.weixin.qq.com/s?__biz=MjM5NzU0MzU0Nw==&mid=2651375342&idx=1&sn=7fa9ff2906f831c9e66e7d8393be7ade&chksm=bd240dfa8a5384ec4c7ad280e9d5df5269c02ca88130c58f310becf97bf4eca6f867d7769755&scene=0#rd"
+                }
+            ],
+            "Time": 1501200641,
+            "NickName": "Python程序员"
+        }
+    ],
+    "ClickReportInterval": 600000
+}
