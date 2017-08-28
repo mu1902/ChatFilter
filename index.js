@@ -6,14 +6,17 @@ const cheerio = require('cheerio');
 
 const request_promise = function (option) {
     option["headers"] = [{
+        name: 'Host',
+        value: 'wx.qq.com'
+    }, {
         name: 'Referer',
-        value: 'https://wx2.qq.com/'
+        value: 'https://wx.qq.com/'
     }, {
         name: 'User-Agent',
         value: 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.86 Safari/537.36'
     }, {
         name: 'Accept',
-        value: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+        value: 'text/html,application/xhtml+xml,application/xml,application/json;q=0.9,image/webp,*/*;q=0.8'
     }];
     option["jar"] = true;
     return new Promise(function (resolve, reject) {
@@ -95,7 +98,7 @@ let baseRequest = {
 };
 let me, members, groups;
 let redirect_uri, pass_ticket, sync_key, sync_key_format;
-let checkSyncTimer;
+let checkSyncTimer, updataContactTimer;
 let HOST_LIST = ["webpush.weixin.qq.com",
     "webpush.wx2.qq.com",
     "webpush.wx8.qq.com",
@@ -142,9 +145,9 @@ const init = async function () {
 
 const wxinit = async function () {
     if (await init()) {
-        console.log(baseRequest);
-        console.log("pass_ticket => " + pass_ticket);
-        console.log("redirect_uri => " + redirect_uri);
+        //console.log(baseRequest);
+        //console.log("pass_ticket => " + pass_ticket);
+        //console.log("redirect_uri => " + redirect_uri);
         const para = {
             r: ~new Date,
             lang: 'zh_CN',
@@ -161,8 +164,10 @@ const wxinit = async function () {
         const res = await request_promise(request_option);
         me = JSON.parse(res).User;
         sync_key = JSON.parse(res).SyncKey;
-        sync_key_format = JSON.parse(res).SyncKey.List.map((item) => item.Key + '_' + item.Val).join('|');
-        console.log("sync_key => " + sync_key_format);
+        sync_key_format = sync_key.List.map((item) => item.Key + '_' + item.Val).join('|');
+        //console.log(me);
+        //console.log("sync_key => " + sync_key_format);
+        console.log("微信初始化成功");
         return true;
     } else {
         return false;
@@ -172,40 +177,41 @@ const wxinit = async function () {
 
 const getContacts = async function () {
     const para = {
+        lang: 'zh-CN',
         pass_ticket: pass_ticket,
         skey: baseRequest.Skey,
+        seq: 0,
         r: +new Date
     };
     const request_option = {
-        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin//webwxgetcontact",
+        url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxgetcontact",
         method: "POST",
-        qs: para
+        qs: para,
+        json: true
     };
 
     const res = await request_promise(request_option);
-    const data = JSON.stringify(res);
 
     members = [];
-    groups = [];
-    data.MemberList.forEach((member) => {
-        if (userName.includes('@@')) {
-            groups.push({ groupName: member.UserName, nickName: member.NickName });
-        } else {
+    groups = {};
+    res.MemberList.forEach((member) => {
+        if (!member.UserName.includes('@@')) {
             members.push({ userName: member.UserName, nickName: member.NickName });
         }
     });
+
+    //console.log(members);
 }
 
-const getGroupMembers = async function () {
+const getGroupMembers = async function (gs) {
     const para = {
         type: "ex",
-        r: +new Date,
-        pass_ticket: pass_ticket
+        r: +new Date
     };
     const body = {
         BaseRequest: baseRequest,
-        Count: 0,
-        List: [];
+        Count: gs.length,
+        List: gs.map((group) => ({ UserName: group.groupName, EncryChatRoomId: '' }))
     };
     const request_option = {
         url: "https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxbatchgetcontact",
@@ -215,7 +221,22 @@ const getGroupMembers = async function () {
     };
 
     const res = await request_promise(request_option);
+    const data = JSON.parse(res);
 
+    data.ContactList.forEach((group) => {
+        if (!groups[group.UserName]) {
+            groups[group.UserName] = [];
+        }
+        group.MemberList.forEach((member) => {
+            groups[group.UserName].push({
+                userName: member.UserName,
+                userNickName: member.NickName,
+                groupNickName: group.NickName
+            });
+        });
+    });
+
+    // console.log(groups);
 }
 
 const notifyMobile = async function () {
@@ -238,7 +259,10 @@ const notifyMobile = async function () {
     };
 
     const res = await request_promise(request_option);
-    console.log(res);
+    const data = JSON.parse(res);
+    if (data.BaseResponse.Ret == 0) {
+        console.log("通知客户端成功");
+    }
 }
 
 const lookupHost = async function () {
@@ -259,7 +283,7 @@ const lookupHost = async function () {
         };
 
         const res = await request_promise(request_option);
-        console.log(res);
+        // console.log(res);
     }
 }
 
@@ -292,8 +316,10 @@ const synccheck = async function () {
     }
 
     if (selector == '2') {
-        await run();
+        await wxsync();
     }
+
+    //console.log([retcode, selector]);
 
     checkSyncTimer = setTimeout(() => {
         synccheck();
@@ -319,22 +345,67 @@ const wxsync = async function () {
     };
 
     const res = await request_promise(request_option);
-    const message = JSON.parse(res).AddMsgList;
-    messageHandle(message);
+    const messages = JSON.parse(res).AddMsgList;
+    sync_key = JSON.parse(res).SyncKey;
+    sync_key_format = sync_key.List.map((item) => item.Key + '_' + item.Val).join('|');
+    // for (let m of messages) {
+    //     if (m.MsgType != 51) {
+    //         console.log([m.MsgType, m.FromUserName, m.Content]);
+    //     }
+    // }
+    await messageHandle(messages);
 };
 
-const messageHandle = function (message) {
-    if (message.MsgType == 1) {
-        console.log(message.FromUserName);
-        console.log(message.Content);
+const messageHandle = async function (messages) {
+    for (let message of messages) {
+        if (message.MsgType == 1 && message.FromUserName != me.UserName) {
+            if (message.FromUserName.includes('@@')) {
+                const userId = message.Content.match(/^(@[a-zA-Z0-9]+|[a-zA-Z0-9_-]+):<br\/>/)[1];
+
+                let group, group_member = null;
+                if (!groups[message.FromUserName]) {
+                    await getGroupMembers([{ groupName: message.FromUserName }]);
+                }
+
+                for (let gm of groups[message.FromUserName]) {
+                    if (gm.userName == userId) {
+                        group_member = gm.userNickName;
+                        group = gm.groupNickName;
+                        break;
+                    }
+                }
+
+                const content = message.Content.replace(/^(@[a-zA-Z0-9]+|[a-zA-Z0-9_-]+):<br\/>/, '');
+
+                console.log("群消息：" + group);
+                console.log("来自：" + group_member);
+                console.log("消息：" + content);
+            } else {
+                let sender = null;
+                for (let m of members) {
+                    if (m.userName == message.FromUserName) {
+                        sender = m.nickName;
+                        break;
+                    }
+                }
+
+                console.log("来自：" + sender);
+                console.log("消息：" + message.Content);
+            }
+        }
     }
 }
 
 const run = async function () {
     if (await wxinit()) {
-        //await notifyMobile();
-        //await lookupHost();
+        await notifyMobile();
+        await lookupHost();
+        await getContacts();
         await synccheck();
+
+        updataContactTimer = setInterval(() => {
+            getContacts();
+        }, 1000 * 60 * 10);
     }
 };
 
