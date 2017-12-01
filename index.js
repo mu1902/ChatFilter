@@ -1,3 +1,4 @@
+const babelpolyfill = require("babel-polyfill");
 const request = require('request');
 const qs = require('querystring');
 const url = require('url');

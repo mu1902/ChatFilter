@@ -2,11 +2,13 @@
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
+var babelpolyfill = require("babel-polyfill");
 var request = require('request');
 var qs = require('querystring');
 var url = require('url');
 var qr = require('qrcode-terminal');
 var cheerio = require('cheerio');
+var f = require("fs");
 
 var request_promise = function request_promise(option) {
     option["headers"] = [{
@@ -181,6 +183,7 @@ var getTicket = function () {
     };
 }();
 
+var keyword = [];
 var baseRequest = {
     Skey: '',
     Sid: '',
@@ -742,7 +745,7 @@ var wxsync = function () {
 
 var messageHandle = function () {
     var _ref12 = _asyncToGenerator(regeneratorRuntime.mark(function _callee12(messages) {
-        var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, message, userId, group, group_member, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, gm, content, sender, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, m;
+        var _iteratorNormalCompletion2, _didIteratorError2, _iteratorError2, _iterator2, _step2, message, isConcern, _iteratorNormalCompletion3, _didIteratorError3, _iteratorError3, _iterator3, _step3, w, userId, group, group_member, _iteratorNormalCompletion4, _didIteratorError4, _iteratorError4, _iterator4, _step4, gm, content, sender, _iteratorNormalCompletion5, _didIteratorError5, _iteratorError5, _iterator5, _step5, m;
 
         return regeneratorRuntime.wrap(function _callee12$(_context12) {
             while (1) {
@@ -756,19 +759,89 @@ var messageHandle = function () {
 
                     case 5:
                         if (_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done) {
-                            _context12.next = 81;
+                            _context12.next = 111;
                             break;
                         }
 
                         message = _step2.value;
+                        isConcern = false;
+                        _iteratorNormalCompletion3 = true;
+                        _didIteratorError3 = false;
+                        _iteratorError3 = undefined;
+                        _context12.prev = 11;
+                        _iterator3 = keyword[Symbol.iterator]();
 
+                    case 13:
+                        if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
+                            _context12.next = 21;
+                            break;
+                        }
+
+                        w = _step3.value;
+
+                        if (!(message.Content.indexOf(w) != -1)) {
+                            _context12.next = 18;
+                            break;
+                        }
+
+                        isConcern = true;
+                        return _context12.abrupt('break', 21);
+
+                    case 18:
+                        _iteratorNormalCompletion3 = true;
+                        _context12.next = 13;
+                        break;
+
+                    case 21:
+                        _context12.next = 27;
+                        break;
+
+                    case 23:
+                        _context12.prev = 23;
+                        _context12.t0 = _context12['catch'](11);
+                        _didIteratorError3 = true;
+                        _iteratorError3 = _context12.t0;
+
+                    case 27:
+                        _context12.prev = 27;
+                        _context12.prev = 28;
+
+                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
+                            _iterator3.return();
+                        }
+
+                    case 30:
+                        _context12.prev = 30;
+
+                        if (!_didIteratorError3) {
+                            _context12.next = 33;
+                            break;
+                        }
+
+                        throw _iteratorError3;
+
+                    case 33:
+                        return _context12.finish(30);
+
+                    case 34:
+                        return _context12.finish(27);
+
+                    case 35:
+                        if (isConcern) {
+                            _context12.next = 37;
+                            break;
+                        }
+
+                        return _context12.abrupt('continue', 108);
+
+                    case 37:
                         if (!(message.MsgType == 1 && message.FromUserName != me.UserName)) {
-                            _context12.next = 78;
+                            _context12.next = 108;
                             break;
                         }
 
                         if (!message.FromUserName.includes('@@')) {
-                            _context12.next = 48;
+                            _context12.next = 78;
                             break;
                         }
 
@@ -776,199 +849,199 @@ var messageHandle = function () {
                         group = void 0, group_member = null;
 
                         if (groups[message.FromUserName]) {
-                            _context12.next = 14;
+                            _context12.next = 44;
                             break;
                         }
 
-                        _context12.next = 14;
+                        _context12.next = 44;
                         return getGroupMembers([{ groupName: message.FromUserName }]);
 
-                    case 14:
-                        _iteratorNormalCompletion3 = true;
-                        _didIteratorError3 = false;
-                        _iteratorError3 = undefined;
-                        _context12.prev = 17;
-                        _iterator3 = groups[message.FromUserName][Symbol.iterator]();
+                    case 44:
+                        _iteratorNormalCompletion4 = true;
+                        _didIteratorError4 = false;
+                        _iteratorError4 = undefined;
+                        _context12.prev = 47;
+                        _iterator4 = groups[message.FromUserName][Symbol.iterator]();
 
-                    case 19:
-                        if (_iteratorNormalCompletion3 = (_step3 = _iterator3.next()).done) {
-                            _context12.next = 28;
+                    case 49:
+                        if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
+                            _context12.next = 58;
                             break;
                         }
 
-                        gm = _step3.value;
+                        gm = _step4.value;
 
                         if (!(gm.userName == userId)) {
-                            _context12.next = 25;
+                            _context12.next = 55;
                             break;
                         }
 
                         group_member = gm.userNickName;
                         group = gm.groupNickName;
-                        return _context12.abrupt('break', 28);
+                        return _context12.abrupt('break', 58);
 
-                    case 25:
-                        _iteratorNormalCompletion3 = true;
-                        _context12.next = 19;
+                    case 55:
+                        _iteratorNormalCompletion4 = true;
+                        _context12.next = 49;
                         break;
 
-                    case 28:
-                        _context12.next = 34;
+                    case 58:
+                        _context12.next = 64;
                         break;
 
-                    case 30:
-                        _context12.prev = 30;
-                        _context12.t0 = _context12['catch'](17);
-                        _didIteratorError3 = true;
-                        _iteratorError3 = _context12.t0;
+                    case 60:
+                        _context12.prev = 60;
+                        _context12.t1 = _context12['catch'](47);
+                        _didIteratorError4 = true;
+                        _iteratorError4 = _context12.t1;
 
-                    case 34:
-                        _context12.prev = 34;
-                        _context12.prev = 35;
+                    case 64:
+                        _context12.prev = 64;
+                        _context12.prev = 65;
 
-                        if (!_iteratorNormalCompletion3 && _iterator3.return) {
-                            _iterator3.return();
+                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
+                            _iterator4.return();
                         }
 
-                    case 37:
-                        _context12.prev = 37;
+                    case 67:
+                        _context12.prev = 67;
 
-                        if (!_didIteratorError3) {
-                            _context12.next = 40;
+                        if (!_didIteratorError4) {
+                            _context12.next = 70;
                             break;
                         }
 
-                        throw _iteratorError3;
+                        throw _iteratorError4;
 
-                    case 40:
-                        return _context12.finish(37);
+                    case 70:
+                        return _context12.finish(67);
 
-                    case 41:
-                        return _context12.finish(34);
+                    case 71:
+                        return _context12.finish(64);
 
-                    case 42:
+                    case 72:
                         content = message.Content.replace(/^(@[a-zA-Z0-9]+|[a-zA-Z0-9_-]+):<br\/>/, '');
 
 
                         console.log("群消息：" + group);
                         console.log("来自：" + group_member);
                         console.log("消息：" + content);
-                        _context12.next = 78;
+                        _context12.next = 108;
                         break;
 
-                    case 48:
+                    case 78:
                         sender = null;
-                        _iteratorNormalCompletion4 = true;
-                        _didIteratorError4 = false;
-                        _iteratorError4 = undefined;
-                        _context12.prev = 52;
-                        _iterator4 = members[Symbol.iterator]();
+                        _iteratorNormalCompletion5 = true;
+                        _didIteratorError5 = false;
+                        _iteratorError5 = undefined;
+                        _context12.prev = 82;
+                        _iterator5 = members[Symbol.iterator]();
 
-                    case 54:
-                        if (_iteratorNormalCompletion4 = (_step4 = _iterator4.next()).done) {
-                            _context12.next = 62;
+                    case 84:
+                        if (_iteratorNormalCompletion5 = (_step5 = _iterator5.next()).done) {
+                            _context12.next = 92;
                             break;
                         }
 
-                        m = _step4.value;
+                        m = _step5.value;
 
                         if (!(m.userName == message.FromUserName)) {
-                            _context12.next = 59;
+                            _context12.next = 89;
                             break;
                         }
 
                         sender = m.nickName;
-                        return _context12.abrupt('break', 62);
+                        return _context12.abrupt('break', 92);
 
-                    case 59:
-                        _iteratorNormalCompletion4 = true;
-                        _context12.next = 54;
+                    case 89:
+                        _iteratorNormalCompletion5 = true;
+                        _context12.next = 84;
                         break;
 
-                    case 62:
-                        _context12.next = 68;
+                    case 92:
+                        _context12.next = 98;
                         break;
 
-                    case 64:
-                        _context12.prev = 64;
-                        _context12.t1 = _context12['catch'](52);
-                        _didIteratorError4 = true;
-                        _iteratorError4 = _context12.t1;
+                    case 94:
+                        _context12.prev = 94;
+                        _context12.t2 = _context12['catch'](82);
+                        _didIteratorError5 = true;
+                        _iteratorError5 = _context12.t2;
 
-                    case 68:
-                        _context12.prev = 68;
-                        _context12.prev = 69;
+                    case 98:
+                        _context12.prev = 98;
+                        _context12.prev = 99;
 
-                        if (!_iteratorNormalCompletion4 && _iterator4.return) {
-                            _iterator4.return();
+                        if (!_iteratorNormalCompletion5 && _iterator5.return) {
+                            _iterator5.return();
                         }
 
-                    case 71:
-                        _context12.prev = 71;
+                    case 101:
+                        _context12.prev = 101;
 
-                        if (!_didIteratorError4) {
-                            _context12.next = 74;
+                        if (!_didIteratorError5) {
+                            _context12.next = 104;
                             break;
                         }
 
-                        throw _iteratorError4;
+                        throw _iteratorError5;
 
-                    case 74:
-                        return _context12.finish(71);
+                    case 104:
+                        return _context12.finish(101);
 
-                    case 75:
-                        return _context12.finish(68);
+                    case 105:
+                        return _context12.finish(98);
 
-                    case 76:
+                    case 106:
 
                         console.log("来自：" + sender);
                         console.log("消息：" + message.Content);
 
-                    case 78:
+                    case 108:
                         _iteratorNormalCompletion2 = true;
                         _context12.next = 5;
                         break;
 
-                    case 81:
-                        _context12.next = 87;
+                    case 111:
+                        _context12.next = 117;
                         break;
 
-                    case 83:
-                        _context12.prev = 83;
-                        _context12.t2 = _context12['catch'](3);
+                    case 113:
+                        _context12.prev = 113;
+                        _context12.t3 = _context12['catch'](3);
                         _didIteratorError2 = true;
-                        _iteratorError2 = _context12.t2;
+                        _iteratorError2 = _context12.t3;
 
-                    case 87:
-                        _context12.prev = 87;
-                        _context12.prev = 88;
+                    case 117:
+                        _context12.prev = 117;
+                        _context12.prev = 118;
 
                         if (!_iteratorNormalCompletion2 && _iterator2.return) {
                             _iterator2.return();
                         }
 
-                    case 90:
-                        _context12.prev = 90;
+                    case 120:
+                        _context12.prev = 120;
 
                         if (!_didIteratorError2) {
-                            _context12.next = 93;
+                            _context12.next = 123;
                             break;
                         }
 
                         throw _iteratorError2;
 
-                    case 93:
-                        return _context12.finish(90);
+                    case 123:
+                        return _context12.finish(120);
 
-                    case 94:
-                        return _context12.finish(87);
+                    case 124:
+                        return _context12.finish(117);
 
-                    case 95:
+                    case 125:
                     case 'end':
                         return _context12.stop();
                 }
             }
-        }, _callee12, this, [[3, 83, 87, 95], [17, 30, 34, 42], [35,, 37, 41], [52, 64, 68, 76], [69,, 71, 75], [88,, 90, 94]]);
+        }, _callee12, this, [[3, 113, 117, 125], [11, 23, 27, 35], [28,, 30, 34], [47, 60, 64, 72], [65,, 67, 71], [82, 94, 98, 106], [99,, 101, 105], [118,, 120, 124]]);
     }));
 
     return function messageHandle(_x4) {
@@ -976,43 +1049,72 @@ var messageHandle = function () {
     };
 }();
 
+var getKeyWords = function getKeyWords() {
+    var word = f.readFileSync('keyword.txt', 'utf-8');
+    var _iteratorNormalCompletion6 = true;
+    var _didIteratorError6 = false;
+    var _iteratorError6 = undefined;
+
+    try {
+        for (var _iterator6 = word.split('\r\n')[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+            var w = _step6.value;
+
+            keyword.push(w);
+        }
+    } catch (err) {
+        _didIteratorError6 = true;
+        _iteratorError6 = err;
+    } finally {
+        try {
+            if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                _iterator6.return();
+            }
+        } finally {
+            if (_didIteratorError6) {
+                throw _iteratorError6;
+            }
+        }
+    }
+};
+
 var run = function () {
     var _ref13 = _asyncToGenerator(regeneratorRuntime.mark(function _callee13() {
         return regeneratorRuntime.wrap(function _callee13$(_context13) {
             while (1) {
                 switch (_context13.prev = _context13.next) {
                     case 0:
-                        _context13.next = 2;
+                        getKeyWords();
+                        _context13.next = 3;
                         return wxinit();
 
-                    case 2:
+                    case 3:
                         if (!_context13.sent) {
-                            _context13.next = 12;
+                            _context13.next = 13;
                             break;
                         }
 
-                        _context13.next = 5;
+                        _context13.next = 6;
                         return notifyMobile();
 
-                    case 5:
-                        _context13.next = 7;
+                    case 6:
+                        _context13.next = 8;
                         return lookupHost();
 
-                    case 7:
-                        _context13.next = 9;
+                    case 8:
+                        _context13.next = 10;
                         return getContacts();
 
-                    case 9:
-                        _context13.next = 11;
+                    case 10:
+                        _context13.next = 12;
                         return synccheck();
 
-                    case 11:
+                    case 12:
 
                         updataContactTimer = setInterval(function () {
                             getContacts();
                         }, 1000 * 60 * 10);
 
-                    case 12:
+                    case 13:
                     case 'end':
                         return _context13.stop();
                 }
