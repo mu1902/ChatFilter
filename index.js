@@ -3,6 +3,7 @@ const qs = require('querystring');
 const url = require('url');
 const qr = require('qrcode-terminal');
 const cheerio = require('cheerio');
+const f = require("fs");
 
 const request_promise = function (option) {
     option["headers"] = [{
@@ -90,6 +91,7 @@ const getTicket = async function (url) {
     }
 }
 
+let keyword = [];
 let baseRequest = {
     Skey: '',
     Sid: '',
@@ -358,6 +360,16 @@ const wxsync = async function () {
 
 const messageHandle = async function (messages) {
     for (let message of messages) {
+        let isConcern = false;
+        for (let w of keyword) {
+            if (message.Content.indexOf(w) != -1) {
+                isConcern = true;
+                break;
+            }
+        }
+        if (!isConcern) {
+            continue;
+        }
         if (message.MsgType == 1 && message.FromUserName != me.UserName) {
             if (message.FromUserName.includes('@@')) {
                 const userId = message.Content.match(/^(@[a-zA-Z0-9]+|[a-zA-Z0-9_-]+):<br\/>/)[1];
@@ -396,7 +408,15 @@ const messageHandle = async function (messages) {
     }
 }
 
+const getKeyWords = function () {
+    const word = f.readFileSync('keyword.txt', 'utf-8');
+    for (let w of word.split('\r\n')) {
+        keyword.push(w);
+    }
+}
+
 const run = async function () {
+    getKeyWords();
     if (await wxinit()) {
         await notifyMobile();
         await lookupHost();
