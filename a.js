@@ -1,5 +1,5 @@
-console.log('\033[40m  \033[0m');
-console.log('\033[47m  \033[0m');
+console.log('\x1B[40m  \x1B[0m');
+console.log('\x1B[47m  \x1B[0m');
 
 process.stdin.setEncoding('utf8');
 
