@@ -410,9 +410,13 @@ const messageHandle = async function (messages) {
 }
 
 const getKeyWords = function () {
-    const word = f.readFileSync('keyword.txt', 'utf-8');
-    for (let w of word.split('\r\n')) {
-        keyword.push(w);
+    try{
+        const word = f.readFileSync('keyword.txt', 'utf-8');
+        for (let w of word.split('\r\n')) {
+            keyword.push(w);
+        }
+    }catch(e){
+        console.log('没有找到keyword.txt');
     }
 }
 

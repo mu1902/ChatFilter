@@ -1,4 +1,4 @@
-'use strict';
+// 'use strict';
 
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
@@ -1050,30 +1050,34 @@ var messageHandle = function () {
 }();
 
 var getKeyWords = function getKeyWords() {
-    var word = f.readFileSync('keyword.txt', 'utf-8');
-    var _iteratorNormalCompletion6 = true;
-    var _didIteratorError6 = false;
-    var _iteratorError6 = undefined;
-
     try {
-        for (var _iterator6 = word.split('\r\n')[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
-            var w = _step6.value;
+        var word = f.readFileSync('keyword.txt', 'utf-8');
+        var _iteratorNormalCompletion6 = true;
+        var _didIteratorError6 = false;
+        var _iteratorError6 = undefined;
 
-            keyword.push(w);
-        }
-    } catch (err) {
-        _didIteratorError6 = true;
-        _iteratorError6 = err;
-    } finally {
         try {
-            if (!_iteratorNormalCompletion6 && _iterator6.return) {
-                _iterator6.return();
+            for (var _iterator6 = word.split('\r\n')[Symbol.iterator](), _step6; !(_iteratorNormalCompletion6 = (_step6 = _iterator6.next()).done); _iteratorNormalCompletion6 = true) {
+                var w = _step6.value;
+
+                keyword.push(w);
             }
+        } catch (err) {
+            _didIteratorError6 = true;
+            _iteratorError6 = err;
         } finally {
-            if (_didIteratorError6) {
-                throw _iteratorError6;
+            try {
+                if (!_iteratorNormalCompletion6 && _iterator6.return) {
+                    _iterator6.return();
+                }
+            } finally {
+                if (_didIteratorError6) {
+                    throw _iteratorError6;
+                }
             }
         }
+    } catch (e) {
+        console.log('没有找到keyword.txt');
     }
 };
 
